@@ -17,6 +17,10 @@ Channel
   .fromPath(params.drug_annotation)
   .ifEmpty { exit 1, "Drug annotation CSV file not found: ${params.drug_annotation}" }
   .set { drug_annotation }
+Channel
+  .fromPath(params.published_info)
+  .ifEmpty { exit 1, "Published info XLSX file not found: ${params.published_info}" }
+  .set { published_info }
 
 /*--------------------------------------------------
   Compile cell curation
@@ -31,7 +35,7 @@ process compilecellcuration {
   file(cell_annotation) from cell_annotation
 
   output:
-  file("cell_cur.RData") into cellcuration
+  file("cell_cur.RData") into cellcuration_tissue, cellcuration_cellline
 
   script:
   """
@@ -49,7 +53,7 @@ process compiletissuecuration {
   container 'bhklab/pharmacogxcwl'
 
   input:
-  file(cellcuration) from cellcuration
+  file(cellcuration) from cellcuration_tissue
   file(tissue_annotation) from tissue_annotation
 
   output:
@@ -79,5 +83,27 @@ process compiledrugcuration {
   script:
   """
   drug_curation.R $drug_annotation
+  """
+}
+
+/*--------------------------------------------------
+  Compile cell line info
+---------------------------------------------------*/
+
+process compilecelllineinfo {
+
+  tag "$cellcuration"
+  container 'bhklab/pharmacogxcwl'
+
+  input:
+  file(cellcuration) from cellcuration_cellline
+  file(published_info) from published_info
+
+  output:
+  file("cellline_info.RData") into celllineinfo
+
+  script:
+  """
+  cellline_info.R $published_info $cellcuration
   """
 }
