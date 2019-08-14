@@ -21,6 +21,26 @@ Channel
   .fromPath(params.published_info)
   .ifEmpty { exit 1, "Published info XLSX file not found: ${params.published_info}" }
   .set { published_info }
+Channel
+  .fromPath(params.drug_raw)
+  .ifEmpty { exit 1, "Raw drug dose reponse CSV file not found: ${params.drug_raw}" }
+  .set { drug_raw }
+Channel
+  .fromPath(params.drug_conc)
+  .ifEmpty { exit 1, "Raw drug dose reponse CSV file not found: ${params.drug_conc}" }
+  .set { drug_conc }
+Channel
+  .fromPath(params.gr_values)
+  .ifEmpty { exit 1, "GR values TSV file not found: ${params.gr_values}" }
+  .set { gr_values }
+Channel
+  .fromPath(params.crosscell)
+  .ifEmpty { exit 1, "Cross referencing cells TXT file not found: ${params.crosscell}" }
+  .set { crosscell }
+Channel
+  .fromPath(params.crossdrug)
+  .ifEmpty { exit 1, "Cross referencing drug TXT file not found: ${params.crossdrug}" }
+  .set { crossdrug }
 
 /*--------------------------------------------------
   Compile cell curation
@@ -35,7 +55,7 @@ process compilecellcuration {
   file(cell_annotation) from cell_annotation
 
   output:
-  file("cell_cur.RData") into cellcuration_tissue, cellcuration_cellline
+  set file("cell_cur.RData") into cellcuration_tissue, cellcuration_cellline, cellcuration_recomput
 
   script:
   """
@@ -105,5 +125,40 @@ process compilecelllineinfo {
   script:
   """
   cellline_info.R $published_info $cellcuration
+  """
+}
+
+/*--------------------------------------------------
+  Recomputation
+---------------------------------------------------*/
+
+process recomputation {
+
+  tag "${cellcuration},${drugcuration}"
+  container 'bhklab/pharmacogxcwl'
+
+  input:
+  file(cellcuration) from cellcuration_recomput
+  file(drugcuration) from drugcuration
+  file(drug_raw) from drug_raw
+  file(drug_conc) from drug_conc
+  file(gr_values) from gr_values
+  file(crosscell) from (crosscell)
+  file(crossdrug) from (crossdrug)
+
+  output:
+  file("drug_norm_post2017.RData") into drugnormpost
+  file("GRAYrecomputed_2017.RData") into gray_recomputed2017
+
+  script:
+  """
+  recomputed_2017.R \
+    $cellcuration \
+    $drugcuration \
+    $drug_raw \
+    $drug_conc \
+    $grv_values \
+    $crosscell \
+    $crossdrug
   """
 }
