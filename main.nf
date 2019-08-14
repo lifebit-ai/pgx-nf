@@ -13,6 +13,10 @@ Channel
   .fromPath(params.cell_annotation)
   .ifEmpty { exit 1, "Cell annotation CSV file not found: ${params.cell_annotation}" }
   .into { cell_annotation; tissue_annotation }
+Channel
+  .fromPath(params.drug_annotation)
+  .ifEmpty { exit 1, "Drug annotation CSV file not found: ${params.drug_annotation}" }
+  .set { drug_annotation }
 
 /*--------------------------------------------------
   Compile cell curation
@@ -54,5 +58,26 @@ process compiletissuecuration {
   script:
   """
   tissue_curation.R $tissue_annotation $cellcuration
+  """
+}
+
+/*--------------------------------------------------
+  Compile drug curation
+---------------------------------------------------*/
+
+process compiledrugcuration {
+
+  tag "$drug_annotation"
+  container 'bhklab/pharmacogxcwl'
+
+  input:
+  file(drug_annotation) from drug_annotation
+
+  output:
+  file("drug_cur.RData") into drugcuration
+
+  script:
+  """
+  drug_curation.R $drug_annotation
   """
 }
