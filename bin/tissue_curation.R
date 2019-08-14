@@ -1,4 +1,4 @@
-
+#!/usr/bin/env Rscript
 getTissueCuration <- function(verbose=FALSE){
 options(stringsAsFactors=FALSE)
 cell_all = commandArgs(trailingOnly=TRUE)[1]
