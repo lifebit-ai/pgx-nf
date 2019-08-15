@@ -143,7 +143,7 @@ process compilecellcuration {
   file(cell_annotation) from cell_annotation
 
   output:
-  set file("cell_cur.RData") into cellcuration_tissue, cellcuration_cellline, cellcuration_recomput, cellcuration_rnaseq, cellcuration_rna
+  set file("cell_cur.RData") into cellcuration_tissue, cellcuration_cellline, cellcuration_recomput, cellcuration_rnaseq, cellcuration_rna, cellcuration_gray
 
   script:
   """
@@ -289,7 +289,7 @@ process compileRNAseq {
 
 process compileRPPA {
 
-  tag "${expression},${proteininfo},${proteinfeature}"
+  tag "${expression},${proteininfo}"
   container 'bhklab/pharmacogxcwl'
 
   input:
@@ -383,5 +383,48 @@ process compileMethylation {
   script:
   """
   methylation.R $matrix $methylationinfo $methylationfeature
+  """
+}
+
+/*--------------------------------------------------
+  Get GRAY2017 PSet
+---------------------------------------------------*/
+
+process getGRAY2017PSet {
+
+  tag "${gray_recomputed2017}"
+  container 'bhklab/pharmacogxcwl'
+  publishDir "${params.outdir}", mode: 'copy'
+
+  input:
+  file(cellcuration) from cellcuration_gray
+  file(tissue_annotation) from tissue_annotation
+  file(drugcuration) from drugcuration
+  file(celllineinfo) from celllineinfo
+  file(drugnormpost) from drugnormpost
+  file(gray_recomputed2017) from gray_recomputed2017
+  file(rnaseq) from rnaseq
+  file(rppa) from rppa
+  file(rna) from rna
+  file(cnv) from cnv
+  file(methylation) from methylation
+
+  output:
+  file("GRAY_2017.RData") into GRAY2017
+
+  script:
+  """
+  GRAY2017.R \
+    $cellcuration \
+    $tissue_annotation \
+    $drugcuration \
+    $celllineinfo \
+    $drugnormpost \
+    $gray_recomputed2017 \
+    $rnaseq \
+    $rppa \
+    $rna \
+    $cnv \
+    $methylation
   """
 }
