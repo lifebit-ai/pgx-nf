@@ -330,7 +330,7 @@ process compileRNA {
 
 process compileCNV {
 
-  tag "${snpexp},${cnvpdata},${cnvfdata}"
+  tag "${snp6},${cnvinfo},${cnvfeature}"
   container 'bhklab/pharmacogxcwl'
 
   input:
@@ -343,6 +343,6 @@ process compileCNV {
 
   script:
   """
-  cnv.R $snpexp $cnvpdata $cnvfdata
+  cnv.R $snp6 $cnvinfo $cnvfeature
   """
 }
