@@ -186,7 +186,7 @@ process compiledrugcuration {
   file(drug_annotation) from drug_annotation
 
   output:
-  file("drug_cur.RData") into drugcuration
+  set file("drug_cur.RData") into drugcuration_recomput, drugcuration_gray
 
   script:
   """
@@ -227,7 +227,7 @@ process recomputation {
 
   input:
   file(cellcuration) from cellcuration_recomput
-  file(drugcuration) from drugcuration
+  file(drugcuration) from drugcuration_recomput
   file(drug_raw) from drug_raw
   file(drug_conc) from drug_conc
   file(gr_values) from gr_values
@@ -398,8 +398,8 @@ process getGRAY2017PSet {
 
   input:
   file(cellcuration) from cellcuration_gray
-  file(tissue_annotation) from tissue_annotation
-  file(drugcuration) from drugcuration
+  file(tissue_annotation) from tissuecuration
+  file(drugcuration) from drugcuration_gray
   file(celllineinfo) from celllineinfo
   file(drugnormpost) from drugnormpost
   file(gray_recomputed2017) from gray_recomputed2017
