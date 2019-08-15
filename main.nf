@@ -61,6 +61,7 @@ Channel
   .fromPath(params.counts)
   .ifEmpty { exit 1, "RNA-Seq counts TXT file not found: ${params.counts}" }
   .set { counts }
+// rppa
 Channel
   .fromPath(params.rppaexp)
   .ifEmpty { exit 1, "RPPA expresion XLSX file not found: ${params.rppaexp}" }
@@ -73,6 +74,7 @@ Channel
   .fromPath(params.rppafdata)
   .ifEmpty { exit 1, "RPPA feature CSV file not found: ${params.rppafdata}" }
   .set { rppafdata }
+// rna
 Channel
   .fromPath(params.rnau133aexp)
   .ifEmpty { exit 1, "RNA expression TXT file not found: ${params.rnau133aexp}" }
@@ -101,6 +103,7 @@ Channel
   .fromPath(params.rnaseqfeature)
   .ifEmpty { exit 1, "RNA-Seq feature CSV file not found: ${params.rnaseqfeature}" }
   .set { rnaseqfeature }
+// cnv
 Channel
   .fromPath(params.snpexp)
   .ifEmpty { exit 1, "CNV TXT file not found: ${params.snpexp}" }
@@ -113,6 +116,19 @@ Channel
   .fromPath(params.cnvfdata)
   .ifEmpty { exit 1, "CNV annotation CSV file not found: ${params.cnvfdata}" }
   .set { cnvfdata }
+// methylation
+Channel
+  .fromPath(params.methylationmatrix)
+  .ifEmpty { exit 1, "Methylation TXT file not found: ${params.methylationmatrix}" }
+  .set { methylationmatrix }
+Channel
+  .fromPath(params.methylationpdata)
+  .ifEmpty { exit 1, "Methylation info CSV file not found: ${params.methylationpdata}" }
+  .set { methylationpdata }
+Channel
+  .fromPath(params.methylationfdata)
+  .ifEmpty { exit 1, "Methylation info CSV file not found: ${params.methylationfdata}" }
+  .set { methylationfdata }
 
 /*--------------------------------------------------
   Compile cell curation
@@ -330,7 +346,7 @@ process compileRNA {
 
 process compileCNV {
 
-  tag "${snp6},${cnvinfo},${cnvfeature}"
+  tag "${snp6},${cnvinfo}"
   container 'bhklab/pharmacogxcwl'
 
   input:
@@ -344,5 +360,28 @@ process compileCNV {
   script:
   """
   cnv.R $snp6 $cnvinfo $cnvfeature
+  """
+}
+
+/*--------------------------------------------------
+  Compile Methylation
+---------------------------------------------------*/
+
+process compileMethylation {
+
+  tag "${matrix},${methylationinfo}"
+  container 'bhklab/pharmacogxcwl'
+
+  input:
+  file(matrix) from methylationmatrix
+  file(methylationinfo) from methylationpdata
+  file(methylationfeature) from methylationfdata
+
+  output:
+  file("Methylation_processed.RData") into methylation
+
+  script:
+  """
+  methylation.R $matrix $methylationinfo $methylationfeature
   """
 }
