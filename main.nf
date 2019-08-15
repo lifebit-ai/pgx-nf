@@ -143,8 +143,8 @@ process recomputation {
   file(drug_raw) from drug_raw
   file(drug_conc) from drug_conc
   file(gr_values) from gr_values
-  file(crosscell) from (crosscell)
-  file(crossdrug) from (crossdrug)
+  file(crosscell) from crosscell
+  file(crossdrug) from crossdrug
 
   output:
   file("drug_norm_post2017.RData") into drugnormpost
@@ -157,7 +157,7 @@ process recomputation {
     $drugcuration \
     $drug_raw \
     $drug_conc \
-    $grv_values \
+    $gr_values \
     $crosscell \
     $crossdrug
   """
