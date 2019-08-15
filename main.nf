@@ -41,6 +41,27 @@ Channel
   .fromPath(params.crossdrug)
   .ifEmpty { exit 1, "Cross referencing drug TXT file not found: ${params.crossdrug}" }
   .set { crossdrug }
+Channel
+  .fromPath(params.matrix)
+  .ifEmpty { exit 1, "RNA-Seq matrix TXT file not found: ${params.matrix}" }
+  .set { matrix }
+Channel
+  .fromPath(params.rnaseqinfo)
+  .ifEmpty { exit 1, "RNA-Seq info CSV file not found: ${params.rnaseqinfo}" }
+  .set { rnaseqinfo }
+Channel
+  .fromPath(params.rnaseqfeature)
+  .ifEmpty { exit 1, "RNA-Seq feature CSV file not found: ${params.rnaseqfeature}" }
+  .set { rnaseqfeature }
+Channel
+  .fromPath(params.expression)
+  .ifEmpty { exit 1, "RNA-Seq expression TXT file not found: ${params.expression}" }
+  .set { expression }
+Channel
+  .fromPath(params.counts)
+  .ifEmpty { exit 1, "RNA-Seq counts TXT file not found: ${params.counts}" }
+  .set { counts }
+  
 
 /*--------------------------------------------------
   Compile cell curation
@@ -55,7 +76,7 @@ process compilecellcuration {
   file(cell_annotation) from cell_annotation
 
   output:
-  set file("cell_cur.RData") into cellcuration_tissue, cellcuration_cellline, cellcuration_recomput
+  set file("cell_cur.RData") into cellcuration_tissue, cellcuration_cellline, cellcuration_recomput, cellcuration_rnaseq
 
   script:
   """
@@ -160,5 +181,37 @@ process recomputation {
     $gr_values \
     $crosscell \
     $crossdrug
+  """
+}
+
+/*--------------------------------------------------
+  Compile RNA-Seq
+---------------------------------------------------*/
+
+process compileRNAseq {
+
+  tag "$cellcuration"
+  container 'bhklab/pharmacogxcwl'
+
+  input:
+  file(cellcuration) from cellcuration_rnaseq
+  file(matrix) from matrix
+  file(rnaseqinfo) from rnaseqinfo
+  file(rnaseqfeature) from rnaseqfeature
+  file(expression) from expression
+  file(counts) from counts
+
+  output:
+  file("RNAseq_processed.RData") into rnaseq
+
+  script:
+  """
+  rna_seq.R \
+    $cellcuration \
+    $matrix \
+    $rnaseqinfo \
+    $rnaseqfeature \
+    $expression \
+    $counts
   """
 }
