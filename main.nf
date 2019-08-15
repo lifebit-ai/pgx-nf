@@ -73,6 +73,34 @@ Channel
   .fromPath(params.rnaseqfeature)
   .ifEmpty { exit 1, "RPPA feature CSV file not found: ${params.rppafdata}" }
   .set { rnaseqfeature }
+Channel
+  .fromPath(params.rnau133aexp)
+  .ifEmpty { exit 1, "RNA expression TXT file not found: ${params.rnau133aexp}" }
+  .set { rnau133aexp }
+Channel
+  .fromPath(params.rnau133apdata)
+  .ifEmpty { exit 1, "RNA TXT file not found: ${params.rnau133apdata}" }
+  .set { rnau133apdata }
+Channel
+  .fromPath(params.rnau133afdata)
+  .ifEmpty { exit 1, "RNA TXT file not found: ${params.rnau133afdata}" }
+  .set { rnau133afdata }
+Channel
+  .fromPath(params.rnau133afdata)
+  .ifEmpty { exit 1, "RNA expression TXT file not found: ${params.rnaexonexp}" }
+  .set { rnau133afdata }
+Channel
+  .fromPath(params.rnaexonpdata)
+  .ifEmpty { exit 1, "RNA exon TXT file not found: ${params.rnaexonpdata}" }
+  .set { rnaexonpdata }
+Channel
+  .fromPath(params.rnaexonfdata)
+  .ifEmpty { exit 1, "RNA exon TXT file not found: ${params.rnaexonfdata}" }
+  .set { rnaexonfdata }
+Channel
+  .fromPath(params.rnaseqfeature)
+  .ifEmpty { exit 1, "RNA-Seq feature CSV file not found: ${params.rnaseqfeature}" }
+  .set { rnaseqfeature }
 
 /*--------------------------------------------------
   Compile cell curation
@@ -87,7 +115,7 @@ process compilecellcuration {
   file(cell_annotation) from cell_annotation
 
   output:
-  set file("cell_cur.RData") into cellcuration_tissue, cellcuration_cellline, cellcuration_recomput, cellcuration_rnaseq
+  set file("cell_cur.RData") into cellcuration_tissue, cellcuration_cellline, cellcuration_recomput, cellcuration_rnaseq, cellcuration_rna
 
   script:
   """
@@ -250,5 +278,39 @@ process compileRPPA {
     $expression \
     $proteininfo \
     $proteinfeature
+  """
+}
+
+/*--------------------------------------------------
+  Compile RNA
+---------------------------------------------------*/
+
+process compileRNA {
+
+  tag "$cellcuration"
+  container 'bhklab/pharmacogxcwl'
+
+  input:
+  file(cellcuration) from cellcuration_rna
+  file(u133aexp) from rnau133aexp
+  file(u133ainfo) from rnau133apdata
+  file(u133afeature) from rnau133afdata
+  file(exonexp) from rnaexonexp
+  file(exoninfo) from rnaexonpdata
+  file(exonfeature) from rnaexonfdata
+
+  output:
+  file("RNA_processed.RData") into rna
+
+  script:
+  """
+  rna.R \
+    $cellcuration \
+    $u133aexp \
+    $u133ainfo \
+    $u133afeature \
+    $exonexp \
+    $exoninfo \
+    $exonfeature
   """
 }
