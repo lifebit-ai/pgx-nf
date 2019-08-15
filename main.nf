@@ -101,6 +101,18 @@ Channel
   .fromPath(params.rnaseqfeature)
   .ifEmpty { exit 1, "RNA-Seq feature CSV file not found: ${params.rnaseqfeature}" }
   .set { rnaseqfeature }
+Channel
+  .fromPath(params.snpexp)
+  .ifEmpty { exit 1, "CNV TXT file not found: ${params.snpexp}" }
+  .set { snpexp }
+Channel
+  .fromPath(params.cnvpdata)
+  .ifEmpty { exit 1, "CNV info CSV file not found: ${params.cnvpdata}" }
+  .set { cnvpdata }
+Channel
+  .fromPath(params.cnvfdata)
+  .ifEmpty { exit 1, "CNV annotation CSV file not found: ${params.cnvfdata}" }
+  .set { cnvfdata }
 
 /*--------------------------------------------------
   Compile cell curation
@@ -274,10 +286,7 @@ process compileRPPA {
 
   script:
   """
-  rppa.R \
-    $expression \
-    $proteininfo \
-    $proteinfeature
+  rppa.R $expression $proteininfo $proteinfeature
   """
 }
 
@@ -312,5 +321,28 @@ process compileRNA {
     $exonexp \
     $exoninfo \
     $exonfeature
+  """
+}
+
+/*--------------------------------------------------
+  Compile CNV
+---------------------------------------------------*/
+
+process compileCNV {
+
+  tag "${snpexp},${cnvpdata},${cnvfdata}"
+  container 'bhklab/pharmacogxcwl'
+
+  input:
+  file(snp6) from snpexp
+  file(cnvinfo) from cnvpdata
+  file(cnvfeature) from cnvfdata
+
+  output:
+  file("cnv_processed.RData") into cnv
+
+  script:
+  """
+  cnv.R $snpexp $cnvpdata $cnvfdata
   """
 }
