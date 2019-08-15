@@ -61,7 +61,18 @@ Channel
   .fromPath(params.counts)
   .ifEmpty { exit 1, "RNA-Seq counts TXT file not found: ${params.counts}" }
   .set { counts }
-  
+Channel
+  .fromPath(params.published_info)
+  .ifEmpty { exit 1, "RPPA expresion XLSX file not found: ${params.rppaexp}" }
+  .set { published_info }
+Channel
+  .fromPath(params.rppapdata)
+  .ifEmpty { exit 1, "RPPA protein info CSV file not found: ${params.rppapdata}" }
+  .set { rppapdata }
+Channel
+  .fromPath(params.rnaseqfeature)
+  .ifEmpty { exit 1, "RPPA feature CSV file not found: ${params.rppafdata}" }
+  .set { rnaseqfeature }
 
 /*--------------------------------------------------
   Compile cell curation
@@ -213,5 +224,31 @@ process compileRNAseq {
     $rnaseqfeature \
     $expression \
     $counts
+  """
+}
+
+/*--------------------------------------------------
+  Compile RPPA
+---------------------------------------------------*/
+
+process compileRPPA {
+
+  tag "${expression},${proteininfo},${proteinfeature}"
+  container 'bhklab/pharmacogxcwl'
+
+  input:
+  file(expression) from rppaexp
+  file(proteininfo) from rppapdata
+  file(proteinfeature) from rppafdata
+
+  output:
+  file("RPPA_processed.RData") into rppa
+
+  script:
+  """
+  rppa.R \
+    $expression \
+    $proteininfo \
+    $proteinfeature
   """
 }
