@@ -62,17 +62,17 @@ Channel
   .ifEmpty { exit 1, "RNA-Seq counts TXT file not found: ${params.counts}" }
   .set { counts }
 Channel
-  .fromPath(params.published_info)
+  .fromPath(params.rppaexp)
   .ifEmpty { exit 1, "RPPA expresion XLSX file not found: ${params.rppaexp}" }
-  .set { published_info }
+  .set { rppaexp }
 Channel
   .fromPath(params.rppapdata)
   .ifEmpty { exit 1, "RPPA protein info CSV file not found: ${params.rppapdata}" }
   .set { rppapdata }
 Channel
-  .fromPath(params.rnaseqfeature)
+  .fromPath(params.rppafdata)
   .ifEmpty { exit 1, "RPPA feature CSV file not found: ${params.rppafdata}" }
-  .set { rnaseqfeature }
+  .set { rppafdata }
 Channel
   .fromPath(params.rnau133aexp)
   .ifEmpty { exit 1, "RNA expression TXT file not found: ${params.rnau133aexp}" }
@@ -86,9 +86,9 @@ Channel
   .ifEmpty { exit 1, "RNA TXT file not found: ${params.rnau133afdata}" }
   .set { rnau133afdata }
 Channel
-  .fromPath(params.rnau133afdata)
+  .fromPath(params.rnaexonexp)
   .ifEmpty { exit 1, "RNA expression TXT file not found: ${params.rnaexonexp}" }
-  .set { rnau133afdata }
+  .set { rnaexonexp }
 Channel
   .fromPath(params.rnaexonpdata)
   .ifEmpty { exit 1, "RNA exon TXT file not found: ${params.rnaexonpdata}" }
