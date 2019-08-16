@@ -41,26 +41,27 @@ Channel
   .fromPath(params.crossdrug)
   .ifEmpty { exit 1, "Cross referencing drug TXT file not found: ${params.crossdrug}" }
   .set { crossdrug }
+// rnaseq
 Channel
-  .fromPath(params.matrix)
-  .ifEmpty { exit 1, "RNA-Seq matrix TXT file not found: ${params.matrix}" }
-  .set { matrix }
+  .fromPath(params.rnaseqmatrix)
+  .ifEmpty { exit 1, "RNA-Seq matrix TXT file not found: ${params.rnaseqmatrix}" }
+  .set { rnaseqmatrix }
 Channel
-  .fromPath(params.rnaseqinfo)
-  .ifEmpty { exit 1, "RNA-Seq info CSV file not found: ${params.rnaseqinfo}" }
-  .set { rnaseqinfo }
+  .fromPath(params.rnaseqpdata)
+  .ifEmpty { exit 1, "RNA-Seq info CSV file not found: ${params.rnaseqpdata}" }
+  .set { rnaseqpdata }
 Channel
-  .fromPath(params.rnaseqfeature)
-  .ifEmpty { exit 1, "RNA-Seq feature CSV file not found: ${params.rnaseqfeature}" }
-  .set { rnaseqfeature }
+  .fromPath(params.rnaseqfdata)
+  .ifEmpty { exit 1, "RNA-Seq feature CSV file not found: ${params.rnaseqfdata}" }
+  .set { rnaseqfdata }
 Channel
-  .fromPath(params.expression)
-  .ifEmpty { exit 1, "RNA-Seq expression TXT file not found: ${params.expression}" }
-  .set { expression }
+  .fromPath(params.rnaseqexp)
+  .ifEmpty { exit 1, "RNA-Seq expression TXT file not found: ${params.rnaseqexp}" }
+  .set { rnaseqexp }
 Channel
-  .fromPath(params.counts)
-  .ifEmpty { exit 1, "RNA-Seq counts TXT file not found: ${params.counts}" }
-  .set { counts }
+  .fromPath(params.rnaseqcounts)
+  .ifEmpty { exit 1, "RNA-Seq counts TXT file not found: ${params.rnaseqcounts}" }
+  .set { rnaseqcounts }
 // rppa
 Channel
   .fromPath(params.rppaexp)
@@ -262,11 +263,11 @@ process compileRNAseq {
 
   input:
   file(cellcuration) from cellcuration_rnaseq
-  file(matrix) from matrix
-  file(rnaseqinfo) from rnaseqinfo
-  file(rnaseqfeature) from rnaseqfeature
-  file(expression) from expression
-  file(counts) from counts
+  file(matrix) from rnaseqmatrix
+  file(rnaseqinfo) from rnaseqpdata
+  file(rnaseqfeature) from rnaseqfdata
+  file(expression) from rnaseqexp
+  file(counts) from rnaseqcounts
 
   output:
   file("RNAseq_processed.RData") into rnaseq
