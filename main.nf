@@ -9,39 +9,48 @@
 ----------------------------------------------------------------------------------------
 */
 
+// Cell curation
 Channel
-  .fromPath(params.cell_annotation)
-  .ifEmpty { exit 1, "Cell annotation CSV file not found: ${params.cell_annotation}" }
-  .into { cell_annotation; tissue_annotation }
+  .fromPath(params.celllines)
+  .ifEmpty { exit 1, "Cell annotation CSV file not found: ${params.celllines}" }
+  .set { celllines }
+// Tissue curation
 Channel
-  .fromPath(params.drug_annotation)
-  .ifEmpty { exit 1, "Drug annotation CSV file not found: ${params.drug_annotation}" }
-  .set { drug_annotation }
+  .fromPath(params.tissues)
+  .ifEmpty { exit 1, "Cell annotation CSV file not found: ${params.tissues}" }
+  .set { tissues }
+// Drug curation
 Channel
-  .fromPath(params.published_info)
-  .ifEmpty { exit 1, "Published info XLSX file not found: ${params.published_info}" }
-  .set { published_info }
+  .fromPath(params.drugs)
+  .ifEmpty { exit 1, "Drug annotation CSV file not found: ${params.drugs}" }
+  .set { drugs }
+// Cell line info
 Channel
-  .fromPath(params.drug_raw)
-  .ifEmpty { exit 1, "Raw drug dose reponse CSV file not found: ${params.drug_raw}" }
-  .set { drug_raw }
+  .fromPath(params.celllinespublished)
+  .ifEmpty { exit 1, "Published info XLSX file not found: ${params.celllinespublished}" }
+  .set { celllinespublished }
+// Recomputation
 Channel
-  .fromPath(params.drug_conc)
-  .ifEmpty { exit 1, "Raw drug dose reponse CSV file not found: ${params.drug_conc}" }
-  .set { drug_conc }
+  .fromPath(params.drugraw)
+  .ifEmpty { exit 1, "Raw drug dose reponse CSV file not found: ${params.drugraw}" }
+  .set { drugraw }
 Channel
-  .fromPath(params.gr_values)
-  .ifEmpty { exit 1, "GR values TSV file not found: ${params.gr_values}" }
-  .set { gr_values }
+  .fromPath(params.drugconc)
+  .ifEmpty { exit 1, "Raw drug dose reponse CSV file not found: ${params.drugconc}" }
+  .set { drugconc }
 Channel
-  .fromPath(params.crosscell)
-  .ifEmpty { exit 1, "Cross referencing cells TXT file not found: ${params.crosscell}" }
-  .set { crosscell }
+  .fromPath(params.raw_gr)
+  .ifEmpty { exit 1, "GR values TSV file not found: ${params.raw_gr}" }
+  .set { raw_gr }
 Channel
-  .fromPath(params.crossdrug)
-  .ifEmpty { exit 1, "Cross referencing drug TXT file not found: ${params.crossdrug}" }
-  .set { crossdrug }
-// rnaseq
+  .fromPath(params.cellcross)
+  .ifEmpty { exit 1, "Cross referencing cells TXT file not found: ${params.cellcross}" }
+  .set { cellcross }
+Channel
+  .fromPath(params.drugcross)
+  .ifEmpty { exit 1, "Cross referencing drug TXT file not found: ${params.drugcross}" }
+  .set { drugcross }
+// Compile RNA-Seq
 Channel
   .fromPath(params.rnaseqmatrix)
   .ifEmpty { exit 1, "RNA-Seq matrix TXT file not found: ${params.rnaseqmatrix}" }
@@ -62,7 +71,7 @@ Channel
   .fromPath(params.rnaseqcounts)
   .ifEmpty { exit 1, "RNA-Seq counts TXT file not found: ${params.rnaseqcounts}" }
   .set { rnaseqcounts }
-// rppa
+// Compile RPPA
 Channel
   .fromPath(params.rppaexp)
   .ifEmpty { exit 1, "RPPA expresion XLSX file not found: ${params.rppaexp}" }
@@ -75,7 +84,7 @@ Channel
   .fromPath(params.rppafdata)
   .ifEmpty { exit 1, "RPPA feature CSV file not found: ${params.rppafdata}" }
   .set { rppafdata }
-// rna
+// Compile RNA
 Channel
   .fromPath(params.rnau133aexp)
   .ifEmpty { exit 1, "RNA expression TXT file not found: ${params.rnau133aexp}" }
@@ -101,10 +110,10 @@ Channel
   .ifEmpty { exit 1, "RNA exon TXT file not found: ${params.rnaexonfdata}" }
   .set { rnaexonfdata }
 Channel
-  .fromPath(params.rnaseqfeature)
-  .ifEmpty { exit 1, "RNA-Seq feature CSV file not found: ${params.rnaseqfeature}" }
-  .set { rnaseqfeature }
-// cnv
+  .fromPath(params.rnaseqfdata)
+  .ifEmpty { exit 1, "RNA-Seq feature CSV file not found: ${params.rnaseqfdata}" }
+  .set { rnaseqfdata }
+// Compile CNV
 Channel
   .fromPath(params.snpexp)
   .ifEmpty { exit 1, "CNV TXT file not found: ${params.snpexp}" }
@@ -117,7 +126,7 @@ Channel
   .fromPath(params.cnvfdata)
   .ifEmpty { exit 1, "CNV annotation CSV file not found: ${params.cnvfdata}" }
   .set { cnvfdata }
-// methylation
+// Compile Methylation
 Channel
   .fromPath(params.methylationmatrix)
   .ifEmpty { exit 1, "Methylation TXT file not found: ${params.methylationmatrix}" }
@@ -141,7 +150,7 @@ process compilecellcuration {
   container 'bhklab/pharmacogxcwl'
 
   input:
-  file(cell_annotation) from cell_annotation
+  file(cell_annotation) from celllines
 
   output:
   set file("cell_cur.RData") into cellcuration_tissue, cellcuration_cellline, cellcuration_recomput, cellcuration_rnaseq, cellcuration_rna, cellcuration_gray
@@ -163,7 +172,7 @@ process compiletissuecuration {
 
   input:
   file(cellcuration) from cellcuration_tissue
-  file(tissue_annotation) from tissue_annotation
+  file(tissue_annotation) from tissues
 
   output:
   file("tissue_cur.RData") into tissuecuration
@@ -184,7 +193,7 @@ process compiledrugcuration {
   container 'bhklab/pharmacogxcwl'
 
   input:
-  file(drug_annotation) from drug_annotation
+  file(drug_annotation) from drugs
 
   output:
   set file("drug_cur.RData") into drugcuration_recomput, drugcuration_gray
@@ -206,7 +215,7 @@ process compilecelllineinfo {
 
   input:
   file(cellcuration) from cellcuration_cellline
-  file(published_info) from published_info
+  file(published_info) from celllinespublished
 
   output:
   file("cellline_info.RData") into celllineinfo
@@ -229,11 +238,11 @@ process recomputation {
   input:
   file(cellcuration) from cellcuration_recomput
   file(drugcuration) from drugcuration_recomput
-  file(drug_raw) from drug_raw
-  file(drug_conc) from drug_conc
-  file(gr_values) from gr_values
-  file(crosscell) from crosscell
-  file(crossdrug) from crossdrug
+  file(drug_raw2017) from drugraw
+  file(drug_conc2017) from drugconc
+  file(gr_values) from raw_gr
+  file(crosscell) from cellcross
+  file(crossdrug) from drugcross
 
   output:
   file("drug_norm_post2017.RData") into drugnormpost
@@ -244,8 +253,8 @@ process recomputation {
   recomputed_2017.R \
     $cellcuration \
     $drugcuration \
-    $drug_raw \
-    $drug_conc \
+    $drug_raw2017 \
+    $drug_conc2017 \
     $gr_values \
     $crosscell \
     $crossdrug
